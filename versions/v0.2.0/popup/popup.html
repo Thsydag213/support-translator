@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Support Translator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <b>🌐 Support Translator <span class="muted small" id="ver"></span></b>
+    <label class="switch" title="Включить/выключить расширение">
+      <input type="checkbox" id="enabled"><span></span>
+    </label>
+  </header>
+
+  <section class="card" id="siteCard">
+    <div class="muted">Текущая вкладка</div>
+    <div id="siteName">—</div>
+    <div class="muted small" id="siteInfo"></div>
+    <button id="connect" class="primary" hidden>Подключить этот сайт</button>
+  </section>
+
+  <section class="card" id="setupCard" hidden>
+    <div class="muted">Настроить окна на этой странице</div>
+    <div class="row">
+      <button data-pick="container">1. Окно чата</button>
+      <button data-pick="message">2. Сообщение</button>
+      <button data-pick="input">3. Поле ввода</button>
+    </div>
+    <div class="row">
+      <button data-pick="sendButton">4. Кнопка отправки</button>
+      <button data-pick="ticketId">5. ID тикета</button>
+    </div>
+    <div class="row">
+      <button id="rescan">↻ Перевести заново</button>
+      <button id="translateInput">✎ Перевести ввод</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="muted">Сегодня</div>
+    <div class="stats">
+      <div><b id="sIn">0</b><span>входящих</span></div>
+      <div><b id="sOut">0</b><span>ответов</span></div>
+      <div><b id="sChars">0</b><span>символов</span></div>
+      <div><b id="sGuard">0</b><span>блокировок</span></div>
+    </div>
+    <div class="small muted" id="sExtra"></div>
+    <div class="small err" id="lastError"></div>
+  </section>
+
+  <footer>
+    <a href="#" id="options">Настройки</a>
+    <a href="#" id="statsLink">Статистика</a>
+    <span class="muted small">Ctrl+Shift+Y — перевод ввода</span>
+  </footer>
+  <script src="../lib/defaults.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

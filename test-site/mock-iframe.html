@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mock Desk (chat in iframe)</title>
+  <style>
+    body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #e9edf2; height: 100vh; display: flex; flex-direction: column; }
+    header { background: #243447; color: #fff; padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
+    header small { opacity: .7; }
+    iframe { flex: 1; border: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <header>
+    <b>Helpdesk shell</b>
+    <small>Страница: localhost · чат во фрейме с другого origin (127.0.0.1) — проверка all_frames и доступа к домену фрейма</small>
+  </header>
+  <iframe id="chat" title="chat"></iframe>
+  <script>
+    // Фрейм с другого origin: localhost <-> 127.0.0.1
+    const other = location.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
+    document.getElementById('chat').src = location.protocol + '//' + other + ':' + location.port + '/test-site/mock-chat.html' + location.search;
+  </script>
+</body>
+</html>

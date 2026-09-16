@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Support Translator — настройки</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>🌐 Support Translator <span class="muted" id="version"></span></h1>
+
+    <section>
+      <h2>Входящие сообщения</h2>
+      <div class="grid">
+        <label>Переводить на язык
+          <select id="targetLang"></select>
+        </label>
+        <label>Не переводить языки (через запятую)
+          <input id="skipLangs" placeholder="en">
+        </label>
+        <label>Как показывать перевод
+          <select id="displayMode">
+            <option value="below">Под оригиналом</option>
+            <option value="replace">Вместо оригинала (оригинал по кнопке)</option>
+          </select>
+        </label>
+        <label>Минимум символов для перевода
+          <input id="minChars" type="number" min="1" max="100">
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Исходящие сообщения</h2>
+      <div class="grid">
+        <label>Язык по умолчанию (если язык собеседника не определён)
+          <select id="fallbackOutgoingLang"></select>
+        </label>
+        <label>Обратный перевод для проверки
+          <select id="backTranslateLang"></select>
+        </label>
+        <label class="check"><input type="checkbox" id="outgoingButton"> Показывать кнопку «Перевести» у поля ввода</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Провайдер перевода</h2>
+      <div class="grid">
+        <label>Провайдер
+          <select id="provider">
+            <option value="google-free">Google Translate — бесплатный (неофициальный)</option>
+            <option value="google-cloud">Google Cloud Translation API — официальный (ключ)</option>
+          </select>
+        </label>
+        <label>Google Cloud API key
+          <input id="googleCloudApiKey" type="password" placeholder="AIza…" autocomplete="off">
+        </label>
+        <label class="check"><input type="checkbox" id="fallbackToCloud"> Если бесплатный недоступен и ключ задан — переключаться на официальный</label>
+      </div>
+      <div class="test">
+        <input id="testText" value="Hola, no puedo entrar en mi cuenta desde ayer.">
+        <button id="testBtn">Проверить перевод</button>
+        <button id="clearCache" class="secondary">Очистить кэш</button>
+      </div>
+      <pre id="testOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Сайты и окна</h2>
+      <p class="muted">Правило включается, если URL вкладки подходит под шаблон (<code>*</code> — любые символы, несколько шаблонов через запятую).
+        Селекторы проще всего задать через popup расширения: «Окно чата» → «Сообщение» → «Поле ввода».</p>
+      <div id="sites"></div>
+      <button id="addSite" class="secondary">+ Добавить сайт</button>
+    </section>
+
+    <section>
+      <h2>Импорт / экспорт</h2>
+      <p class="muted">Для раздачи одинаковых настроек всей команде. API key в экспорт не попадает.</p>
+      <div class="test">
+        <button id="export" class="secondary">Экспорт в файл</button>
+        <label class="file secondary">Импорт из файла<input type="file" id="import" accept=".json"></label>
+      </div>
+    </section>
+
+    <div class="bar">
+      <span id="saved" class="muted"></span>
+      <button id="save">Сохранить</button>
+    </div>
+  </main>
+
+  <template id="siteTpl">
+    <div class="site">
+      <div class="site__head">
+        <label class="check"><input type="checkbox" data-f="enabled"> Включено</label>
+        <input data-f="name" class="site__name" placeholder="Название">
+        <button class="danger" data-act="del">Удалить</button>
+      </div>
+      <div class="grid">
+        <label>Шаблон URL <input data-f="urlPattern" placeholder="https://support.example.com/*"></label>
+        <label>Окно(а) чата — containerSelector <input data-f="containerSelector" placeholder="#chat-messages"></label>
+        <label>Сообщение — messageSelector <input data-f="messageSelector" placeholder=".message-text (пусто = авто)"></label>
+        <label>Поле ввода — inputSelector <input data-f="inputSelector" placeholder="textarea#reply (пусто = любое)"></label>
+      </div>
+    </div>
+  </template>
+
+  <script src="../lib/defaults.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

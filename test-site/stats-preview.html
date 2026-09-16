@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stats preview (demo data)</title>
+</head>
+<body>
+  <!--
+    Предпросмотр extension/stats/stats.html без установки расширения:
+    эмулирует chrome.* и генерирует демо-данные за 30 дней.
+    http://localhost:8787/test-site/stats-preview.html
+  -->
+  <script>
+    (async function () {
+      const EXT = '../extension/';
+      const LANGS = { es: 30, tr: 18, pt: 14, de: 9, fr: 8, ar: 6, pl: 5, it: 4, 'zh-CN': 3, uk: 3, id: 2 };
+      function demoDays() {
+        const days = [];
+        const now = new Date();
+        let seed = 7;
+        const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+          if (d.getDay() === 0 || d.getDay() === 6) continue;
+          const date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          const incoming = {}, outgoing = {};
+          let chars = 0, inN = 0;
+          for (const [l, w] of Object.entries(LANGS)) {
+            const n = Math.round(w * (2.2 + rnd() * 0.8));
+            const c = n * Math.round(300 + rnd() * 200);
+            incoming[l] = { n, chars: c };
+            const o = Math.round(n * (0.8 + rnd() * 0.3));
+            outgoing[l] = { n: o, chars: o * 280 };
+            chars += c + o * 280 * 2.6;
+            inN += n;
+          }
+          const requests = Math.round(inN * 3.4);
+          days.push({
+            date, requests, chars: Math.round(chars), cacheHits: Math.round(requests * (0.25 + rnd() * 0.1)), errors: Math.round(rnd() * 3),
+            providers: { 'google-free': Math.round(chars) }, incoming, outgoing,
+            guard: { blocked: Math.round(5 + rnd() * 10), sentAsIs: Math.round(rnd() * 3), translated: Math.round(4 + rnd() * 8) }
+          });
+        }
+        return days;
+      }
+      const days = demoDays();
+      window.chrome = {
+        storage: { local: { async get() { return { settings: null }; } } },
+        runtime: {
+          async sendMessage(msg) {
+            if (msg.type === 'getStats') return { ok: true, days, today: days[days.length - 1] };
+            return { ok: true };
+          }
+        }
+      };
+      const html = await (await fetch(EXT + 'stats/stats.html')).text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = EXT + 'stats/stats.css';
+      document.head.appendChild(link);
+      doc.querySelectorAll('script').forEach((s) => s.remove());
+      document.body.innerHTML = doc.body.innerHTML;
+      for (const f of ['lib/defaults.js', 'stats/stats.js']) {
+        await new Promise((res) => {
+          const s = document.createElement('script');
+          s.src = EXT + f;
+          s.onload = res;
+          document.body.appendChild(s);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

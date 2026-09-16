@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mock Support Chat</title>
+  <style>
+    :root { --bg:#eef1f5; --panel:#fff; --text:#1f2328; --muted:#6a737d; --in:#fff; --out:#d9ecff; --border:#dde2e8; --accent:#2f6fed; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:14px/1.45 system-ui,-apple-system,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; }
+    aside { width:260px; background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+    aside h1 { font-size:15px; margin:0; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .ticket { padding:10px 16px; border-bottom:1px solid var(--border); cursor:pointer; }
+    .ticket:hover { background:#f6f8fa; }
+    .ticket.active { background:#e8f0fe; }
+    .ticket small { color:var(--muted); display:block; }
+    .tools { margin-top:auto; padding:12px 16px; display:flex; flex-direction:column; gap:6px; border-top:1px solid var(--border); }
+    main { flex:1; display:flex; flex-direction:column; min-width:0; }
+    .chat-head { background:var(--panel); padding:12px 18px; border-bottom:1px solid var(--border); font-weight:600; }
+    #chat-messages { flex:1; overflow:auto; padding:18px; display:flex; flex-direction:column; gap:10px; }
+    .msg { max-width:70%; padding:8px 12px; border-radius:12px; background:var(--in); border:1px solid var(--border); }
+    .msg.out { align-self:flex-end; background:var(--out); border-color:#bcd9fb; }
+    .msg .author { font-size:11px; color:var(--muted); margin-bottom:2px; }
+    .composer { background:var(--panel); border-top:1px solid var(--border); padding:12px 18px; display:flex; gap:8px; align-items:flex-end; }
+    #composer, #composer-rich { flex:1; min-height:60px; max-height:160px; overflow:auto; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; resize:vertical; background:#fff; }
+    #composer-rich[hidden], #composer[hidden] { display:none; }
+    button { font:inherit; padding:8px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+    button.ghost { background:#fff; color:var(--accent); }
+    .harness { position:fixed; right:10px; top:10px; background:#fff3cd; border:1px solid #e0c36b; padding:4px 8px; border-radius:6px; font-size:12px; z-index:10; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>🎧 Mock Support Desk</h1>
+    <div id="tickets"></div>
+    <div class="tools">
+      <button class="ghost" id="simulate">+ Входящее (случайный язык)</button>
+      <button class="ghost" id="toggleRich">Переключить поле: textarea / contenteditable</button>
+    </div>
+  </aside>
+  <main>
+    <div class="chat-head" id="chatTitle"></div>
+    <div id="chat-messages"></div>
+    <div class="composer">
+      <textarea id="composer" placeholder="Напишите ответ… (Enter — отправить, Shift+Enter — новая строка)"></textarea>
+      <div id="composer-rich" contenteditable="true" hidden></div>
+      <button id="send">Отправить</button>
+    </div>
+  </main>
+
+  <script>
+    const TICKETS = [
+      { id: 1, user: 'Carlos M.', messages: [
+        ['in', 'Hola, no puedo entrar en mi cuenta desde ayer. Me sale el error "token expirado".'],
+        ['out', 'Hello Carlos, could you tell me which device you are using?'],
+        ['in', 'Uso un iPhone 13 con la última versión de la app. Ya intenté reinstalarla y no funcionó.']
+      ]},
+      { id: 2, user: 'Ahmet Y.', messages: [
+        ['in', 'Merhaba, ödeme yaptım ama bakiyem güncellenmedi. İşlem numarası: TX-99812.'],
+        ['in', 'Lütfen yardım edin, acil.']
+      ]},
+      { id: 3, user: 'Julia K.', messages: [
+        ['in', 'Guten Tag! Ich möchte mein Abonnement kündigen, finde aber den Button nicht.'],
+      ]},
+      { id: 4, user: 'John D.', messages: [
+        ['in', 'Hi, my withdrawal has been pending for 3 days. Any update?'],
+        ['out', 'Hi John, we are checking it with the payments team.']
+      ]},
+      { id: 5, user: 'Мария', messages: [
+        ['in', 'Здравствуйте! Не приходит код подтверждения на почту, проверила спам.'],
+      ]}
+    ];
+    const RANDOM_IN = [
+      'Obrigado pela ajuda, mas o problema continua. O aplicativo fecha sozinho quando abro o chat.',
+      'Bonjour, je n\'ai pas reçu mon remboursement. Pouvez-vous vérifier ?',
+      'مرحبا، لا أستطيع تغيير كلمة المرور الخاصة بي',
+      '你好，我的账户被锁定了，怎么解锁？',
+      'Ciao, il pagamento risulta addebitato due volte sulla mia carta.',
+      'Dzień dobry, nie mogę zweryfikować konta — zdjęcie dokumentu jest odrzucane.',
+      'Thanks, it works now!',
+      'ok'
+    ];
+
+    let current = TICKETS[0];
+    const $ = (id) => document.getElementById(id);
+
+    function renderTickets() {
+      $('tickets').innerHTML = '';
+      for (const t of TICKETS) {
+        const d = document.createElement('div');
+        d.className = 'ticket' + (t === current ? ' active' : '');
+        d.innerHTML = '<b></b><small></small>';
+        d.querySelector('b').textContent = '#' + t.id + ' ' + t.user;
+        d.querySelector('small').textContent = t.messages[t.messages.length - 1][1].slice(0, 40) + '…';
+        d.onclick = () => { current = t; renderTickets(); renderChat(); };
+        $('tickets').appendChild(d);
+      }
+    }
+
+    // Эмулируем поведение SPA: окно чата полностью перерисовывается при смене тикета
+    function renderChat() {
+      $('chatTitle').textContent = 'Ticket #' + current.id + ' — ' + current.user;
+      const box = $('chat-messages');
+      box.innerHTML = '';
+      for (const [dir, text] of current.messages) appendMsg(dir, text);
+    }
+
+    function appendMsg(dir, text) {
+      const m = document.createElement('div');
+      m.className = 'msg ' + dir;
+      const a = document.createElement('div');
+      a.className = 'author';
+      a.textContent = dir === 'in' ? current.user : 'Support';
+      const t = document.createElement('div');
+      t.className = 'msg-text';
+      t.textContent = text;
+      t.style.whiteSpace = 'pre-wrap';
+      m.append(a, t);
+      $('chat-messages').appendChild(m);
+      $('chat-messages').scrollTop = 1e9;
+    }
+
+    function field() { return $('composer').hidden ? $('composer-rich') : $('composer'); }
+
+    function send() {
+      const f = field();
+      const text = (f.value !== undefined ? f.value : f.innerText).trim();
+      if (!text) return;
+      current.messages.push(['out', text]);
+      appendMsg('out', text);
+      if (f.value !== undefined) f.value = ''; else f.innerHTML = '';
+      renderTickets();
+    }
+
+    $('send').onclick = send;
+    for (const id of ['composer', 'composer-rich']) {
+      $(id).addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) { e.preventDefault(); send(); }
+      });
+    }
+    // Глобальный обработчик Enter — проверяем, что панель перевода его не "пропускает"
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && e.target === document.body) console.log('[mock] document Enter');
+    });
+    $('toggleRich').onclick = () => { $('composer').hidden = !$('composer').hidden; $('composer-rich').hidden = !$('composer-rich').hidden; field().focus(); };
+    $('simulate').onclick = () => {
+      const text = RANDOM_IN[Math.floor(Math.random() * RANDOM_IN.length)];
+      current.messages.push(['in', text]);
+      appendMsg('in', text);
+      renderTickets();
+    };
+
+    renderTickets();
+    renderChat();
+
+    // Dev-режим без установки расширения: mock-chat.html?harness=1
+    if (new URLSearchParams(location.search).has('harness')) {
+      const badge = document.createElement('div');
+      badge.className = 'harness';
+      badge.textContent = 'DEV HARNESS (без расширения)';
+      document.body.appendChild(badge);
+      const s = document.createElement('script');
+      s.src = 'harness.js';
+      document.body.appendChild(s);
+    }
+  </script>
+</body>
+</html>
