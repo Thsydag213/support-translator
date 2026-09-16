@@ -78,6 +78,7 @@
     command: (command) => post({ type: 'command', command }),
     pick: (kind) => post({ type: 'pick', kind }),
     status: () => post({ type: 'status' }),
+    diag: () => post({ type: 'diag' }),
     store,
     async setSettings(patch, sitePatch) {
       const s = globalThis.ST_LIB.mergeSettings(store.settings);
@@ -100,7 +101,7 @@
 
   const files = [
     'lib/defaults.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
-    'content/core.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/main.js'
+    'content/core.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
     if (i >= files.length) return console.log('[harness] loaded');

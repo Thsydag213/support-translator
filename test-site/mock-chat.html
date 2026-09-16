@@ -68,6 +68,10 @@
       ]},
       { id: 5, user: 'Мария', messages: [
         ['in', 'Здравствуйте! Не приходит код подтверждения на почту, проверила спам.'],
+      ]},
+      // Письмо внутри iframe srcdoc — так почтовые сообщения показывают некоторые хелпдески (например, Intercom)
+      { id: 6, user: 'Ana (email)', messages: [
+        ['in-email', '<p>Olá, equipe!</p><p>Gostaria de solicitar o reembolso da minha assinatura. O serviço não atendeu às minhas expectativas e ainda estou dentro do prazo de 14 dias.</p><p>Obrigada,<br>Ana</p>']
       ]}
     ];
     const RANDOM_IN = [
@@ -91,7 +95,7 @@
         d.className = 'ticket' + (t === current ? ' active' : '');
         d.innerHTML = '<b></b><small></small>';
         d.querySelector('b').textContent = '#' + t.id + ' ' + t.user;
-        d.querySelector('small').textContent = t.messages[t.messages.length - 1][1].slice(0, 40) + '…';
+        d.querySelector('small').textContent = t.messages[t.messages.length - 1][1].replace(/<[^>]+>/g, ' ').slice(0, 40) + '…';
         d.onclick = () => { current = t; renderTickets(); renderChat(); };
         $('tickets').appendChild(d);
       }
@@ -106,6 +110,21 @@
     }
 
     function appendMsg(dir, text) {
+      if (dir === 'in-email') {
+        const m = document.createElement('div');
+        m.className = 'msg in email';
+        const a = document.createElement('div');
+        a.className = 'author';
+        a.textContent = current.user + ' — email';
+        const f = document.createElement('iframe');
+        f.className = 'email-frame';
+        f.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups');
+        f.style.cssText = 'border:0;width:100%;height:220px;background:#fff';
+        f.srcdoc = '<!doctype html><meta charset="utf-8"><body style="font:14px/1.45 system-ui,sans-serif;margin:0">' + text + '</body>';
+        m.append(a, f);
+        $('chat-messages').appendChild(m);
+        return;
+      }
       const m = document.createElement('div');
       m.className = 'msg ' + dir;
       const a = document.createElement('div');
