@@ -86,7 +86,20 @@
     ];
 
     let current = TICKETS[0];
-    const $ = (id) => document.getElementById(id);
+
+    // ?shadow=1 — весь интерфейс внутри open Shadow DOM (так устроены некоторые хелпдески)
+    let ROOT = document;
+    if (new URLSearchParams(location.search).has('shadow')) {
+      const host = document.createElement('div');
+      host.id = 'app-host';
+      host.style.cssText = 'display:flex;flex:1;height:100vh;min-width:0';
+      const sr = host.attachShadow({ mode: 'open' });
+      sr.appendChild(document.querySelector('style').cloneNode(true));
+      for (const el of [...document.body.children]) if (el.tagName !== 'SCRIPT') sr.appendChild(el);
+      document.body.prepend(host);
+      ROOT = sr;
+    }
+    const $ = (id) => ROOT.getElementById(id);
 
     function renderTickets() {
       $('tickets').innerHTML = '';

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Support Translator — настройки</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>🌐 Support Translator <span class="muted" id="version"></span> <a href="../stats/stats.html" class="h1link">Статистика →</a></h1>
+
+    <section>
+      <h2>Входящие сообщения</h2>
+      <div class="grid">
+        <label>Переводить на язык
+          <select id="targetLang"></select>
+        </label>
+        <label>Не переводить языки (через запятую)
+          <input id="skipLangs" placeholder="en">
+        </label>
+        <label>Как показывать перевод
+          <select id="displayMode">
+            <option value="below">Под оригиналом</option>
+            <option value="replace">Вместо оригинала (оригинал по кнопке)</option>
+          </select>
+        </label>
+        <label>Минимум символов для перевода
+          <input id="minChars" type="number" min="1" max="100">
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Исходящие сообщения</h2>
+      <div class="grid">
+        <label>Язык по умолчанию (если язык собеседника не определён)
+          <select id="fallbackOutgoingLang"></select>
+        </label>
+        <label>Обратный перевод для проверки
+          <select id="backTranslateLang"></select>
+        </label>
+        <label>Языки операторов (через запятую) — не считаются языком собеседника
+          <input id="operatorLangs" placeholder="ru">
+        </label>
+        <label>Защита отправки: не проверять сообщения короче (букв)
+          <input id="guardMinLetters" type="number" min="1" max="200">
+        </label>
+        <label class="check"><input type="checkbox" id="outgoingButton"> Показывать кнопку «Перевести» у поля ввода</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Глоссарий</h2>
+      <p class="muted">По строке на термин. Просто термин — <b>не переводить</b>. <code>термин =&gt; ru: … | es: … | en: …</code> — <b>фиксированный перевод</b> для указанных языков (для остальных языков переводит Google). Регистр не важен, ищутся целые слова. <code>#</code> — комментарий.</p>
+      <textarea id="glossary" rows="8" spellcheck="false" placeholder="Premium Plus&#10;SupportDesk&#10;Кошелёк => ru: Кошелёк | es: Billetera | tr: Cüzdan | en: Wallet&#10;Вывод средств => ru: Вывод средств | es: Retiro | en: Withdrawal"></textarea>
+      <div class="test">
+        <input id="glossaryTest" value="Откройте Кошелёк в Premium Plus и проверьте вывод средств.">
+        <select id="glossaryTestLang"></select>
+        <button id="glossaryTestBtn" class="secondary">Проверить глоссарий</button>
+      </div>
+      <pre id="glossaryOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Провайдер перевода</h2>
+      <div class="grid">
+        <label>Провайдер
+          <select id="provider">
+            <option value="google-free">Google Translate — бесплатный (неофициальный)</option>
+            <option value="google-cloud">Google Cloud Translation API — официальный (ключ)</option>
+          </select>
+        </label>
+        <label>Google Cloud API key
+          <input id="googleCloudApiKey" type="password" placeholder="AIza…" autocomplete="off">
+        </label>
+        <label class="check"><input type="checkbox" id="fallbackToCloud"> Если бесплатный недоступен и ключ задан — переключаться на официальный</label>
+      </div>
+      <div class="test">
+        <input id="testText" value="Hola, no puedo entrar en mi cuenta desde ayer.">
+        <button id="testBtn">Проверить перевод</button>
+        <button id="clearCache" class="secondary">Очистить кэш</button>
+      </div>
+      <pre id="testOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Сайты и окна</h2>
+      <p class="muted">Правило включается, если URL вкладки (или iframe с чатом) подходит под шаблон: <code>*</code> — любые символы, несколько шаблонов через запятую.
+        Расширение работает только на доменах, к которым выдан доступ. Селекторы проще задать через popup расширения.</p>
+      <div id="sites"></div>
+      <button id="addSite" class="secondary">+ Добавить сайт</button>
+    </section>
+
+    <section>
+      <h2>Импорт / экспорт</h2>
+      <p class="muted">Для раздачи одинаковых настроек всей команде. API key в экспорт не попадает. После импорта каждому нужно выдать доступ к сайтам (кнопка у правила).</p>
+      <div class="test">
+        <button id="export" class="secondary">Экспорт в файл</button>
+        <label class="file secondary">Импорт из файла<input type="file" id="import" accept=".json"></label>
+      </div>
+    </section>
+
+    <div class="bar">
+      <span id="saved" class="muted"></span>
+      <button id="save">Сохранить</button>
+    </div>
+  </main>
+
+  <template id="siteTpl">
+    <div class="site">
+      <div class="site__head">
+        <label class="check"><input type="checkbox" data-f="enabled"> Включено</label>
+        <input data-f="name" class="site__name" placeholder="Название">
+        <button class="danger" data-act="del">Удалить</button>
+      </div>
+      <div class="access">
+        <span data-access>…</span>
+        <button class="secondary small" data-act="grant" hidden>Выдать доступ</button>
+      </div>
+      <div class="grid">
+        <label>Шаблон URL (страница и/или iframe чата) <input data-f="urlPattern" placeholder="https://desk.company.com/*"></label>
+        <label>Доп. домены доступа (если не выводятся из шаблона) <input data-f="origins" placeholder="https://chat.vendor.com/*"></label>
+        <label>Окно(а) чата <input data-f="containerSelector" placeholder="#chat-messages"></label>
+        <label>Сообщение <input data-f="messageSelector" placeholder=".message-text (пусто = авто)"></label>
+        <label>Сообщение пользователя (отличает от оператора) <input data-f="userMessageSelector" placeholder=".message--incoming"></label>
+        <label>Поле ввода <input data-f="inputSelector" placeholder="textarea#reply (пусто = любое)"></label>
+        <label>Кнопка отправки <input data-f="sendButtonSelector" placeholder="button[type=submit]"></label>
+        <label>ID тикета (пусто = URL страницы) <input data-f="ticketIdSelector" placeholder=".ticket-header__id"></label>
+        <label>Отправка с клавиатуры
+          <select data-f="sendKey">
+            <option value="enter">Enter</option>
+            <option value="ctrl+enter">Ctrl+Enter</option>
+            <option value="none">Только кнопкой</option>
+          </select>
+        </label>
+        <label>Куда вставлять перевод
+          <select data-f="insertMode">
+            <option value="inside">Внутрь сообщения</option>
+            <option value="after">После сообщения (если сайт «ломается»)</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" data-f="sendGuard"> Предупреждать об отправке непереведённого текста</label>
+      </div>
+    </div>
+  </template>
+
+  <script src="../lib/defaults.js"></script>
+  <script src="../lib/glossary.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

@@ -94,14 +94,9 @@
     }
   }, true);
 
-  const css = document.createElement('link');
-  css.rel = 'stylesheet';
-  css.href = EXT + 'content/content.css';
-  document.head.appendChild(css);
-
   const files = [
     'lib/defaults.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
-    'content/core.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
+    'content/core.js', 'content/styles.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
     if (i >= files.length) return console.log('[harness] loaded');
