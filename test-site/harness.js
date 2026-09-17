@@ -85,6 +85,37 @@
     store.settings = L0; // mergeSettings дополнит остальное значениями по умолчанию
   }
 
+  // ?fakelocal=1 — эмуляция встроенного переводчика Chrome (Translator/LanguageDetector API).
+  // Пакет "скачан" для es/pt → en; остальные пары — "нужно скачать" (идут в облако)
+  if (new URLSearchParams(location.search).has('fakelocal')) {
+    window.stFakeLocal = { calls: 0 };
+    window.Translator = {
+      async availability({ sourceLanguage, targetLanguage }) {
+        return ['es', 'pt'].includes(sourceLanguage) && targetLanguage === 'en' ? 'available' : 'downloadable';
+      },
+      async create({ sourceLanguage, targetLanguage }) {
+        return {
+          async translate(text) {
+            window.stFakeLocal.calls++;
+            return '[local ' + sourceLanguage + '>' + targetLanguage + '] ' + text;
+          }
+        };
+      }
+    };
+    window.LanguageDetector = {
+      async availability() { return 'available'; },
+      async create() {
+        return {
+          async detect(text) {
+            if (/\b(hola|cuenta|puedo|necesito|dinero)\b/i.test(text)) return [{ detectedLanguage: 'es', confidence: 0.95 }];
+            if (/\b(merhaba|ödeme|lütfen)\b/i.test(text)) return [{ detectedLanguage: 'tr', confidence: 0.9 }];
+            return [{ detectedLanguage: 'und', confidence: 0.2 }];
+          }
+        };
+      }
+    };
+  }
+
   const post = (msg) => new Promise((resolve) => messageListeners.forEach((l) => l(msg, {}, resolve)));
   window.stHarness = {
     command: (command) => post({ type: 'command', command }),
@@ -110,7 +141,7 @@
 
   const files = [
     'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
-    'content/core.js', 'content/styles.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
+    'content/core.js', 'content/styles.js', 'content/local-translator.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
     if (i >= files.length) return console.log('[harness] loaded');
