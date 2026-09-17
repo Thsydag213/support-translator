@@ -93,7 +93,7 @@ flowchart LR
       "userMessageSelector": ".msg.in",        // сообщения пользователя
       "inputSelector": "#composer",
       "sendButtonSelector": "#send",
-      "sendKey": "enter",                      // enter | ctrl+enter | shift+enter | none
+      "sendKey": "auto",                       // auto | enter | ctrl+enter | shift+enter | none
       "ticketIdSelector": ".ticket-id",
       "insertMode": "inside",                  // inside | after
       "sendGuard": true,

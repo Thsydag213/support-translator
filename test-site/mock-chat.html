@@ -196,7 +196,9 @@
     $('send').onclick = send;
     for (const id of ['composer', 'composer-rich']) {
       $(id).addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) { e.preventDefault(); send(); }
+        // ?ctrlsend=1 — как в некоторых хелпдесках: Enter переносит строку, отправка по Ctrl+Enter
+        const ctrlSend = new URLSearchParams(location.search).has('ctrlsend');
+        if (e.key === 'Enter' && !e.shiftKey && (ctrlSend ? e.ctrlKey || e.metaKey : !e.ctrlKey)) { e.preventDefault(); send(); }
       });
     }
     // Глобальный обработчик Enter — проверяем, что панель перевода его не "пропускает"
