@@ -98,7 +98,8 @@
         return {
           async translate(text) {
             window.stFakeLocal.calls++;
-            return '[local ' + sourceLanguage + '>' + targetLanguage + '] ' + text;
+            // как настоящий встроенный переводчик: переносы строк склеиваются в пробелы
+            return '[' + targetLanguage + '] ' + String(text).replace(/\s*\n\s*/g, ' ');
           }
         };
       }
