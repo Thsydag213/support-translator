@@ -112,6 +112,7 @@
             if (/\b(hola|cuenta|puedo|necesito|dinero)\b/i.test(text)) return [{ detectedLanguage: 'es', confidence: 0.95 }];
             if (/iPhone/.test(text)) return [{ detectedLanguage: 'es', confidence: 0.5 }]; // неуверенная догадка
             if (/\b(merhaba|ödeme|lütfen)\b/i.test(text)) return [{ detectedLanguage: 'tr', confidence: 0.9 }];
+            if (/\b(guten|ich|möchte|nicht|kündigen)\b/i.test(text)) return [{ detectedLanguage: 'de', confidence: 0.9 }];
             return [{ detectedLanguage: 'und', confidence: 0.2 }];
           }
         };
