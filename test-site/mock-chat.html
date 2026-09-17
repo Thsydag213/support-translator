@@ -27,6 +27,20 @@
     button { font:inherit; padding:8px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
     button.ghost { background:#fff; color:var(--accent); }
     .harness { position:fixed; right:10px; top:10px; background:#fff3cd; border:1px solid #e0c36b; padding:4px 8px; border-radius:6px; font-size:12px; z-index:10; }
+    .chat-subject { font-weight:400; font-size:13px; color:var(--muted); }
+    .composer-wrap { background:var(--panel); border-top:1px solid var(--border); }
+    .composer-wrap .mode-row { padding:8px 18px 0; }
+    .mode { padding:3px 10px; font-size:12px; }
+    .composer { border-top:0 !important; }
+    .note-mode #composer, .note-mode #composer-rich { background:#fff8d6; border-color:#e0c36b; }
+    .msg.note { align-self:flex-end; background:#fff3c4; border-color:#e0c36b; }
+    /* ?dark=1 — тёмная тема, как у некоторых хелпдесков */
+    html.dark { --bg:#15171a; --panel:#1e2125; --text:#e6e8eb; --muted:#9aa0a6; --in:#262a2f; --out:#1f3350; --border:#33373d; --accent:#6ea8fe; }
+    html.dark #composer, html.dark #composer-rich { background:#16181b; color:var(--text); }
+    html.dark .ticket:hover { background:#24282d; }
+    html.dark .ticket.active { background:#243044; }
+    html.dark button.ghost { background:transparent; }
+    html.dark .note-mode #composer, html.dark .note-mode #composer-rich { background:#3a3313; }
   </style>
 </head>
 <body>
@@ -39,38 +53,41 @@
     </div>
   </aside>
   <main>
-    <div class="chat-head" id="chatTitle"></div>
+    <div class="chat-head"><div id="chatTitle"></div><div class="chat-subject" id="chatSubject"></div></div>
     <div id="chat-messages"></div>
-    <div class="composer">
-      <textarea id="composer" placeholder="Напишите ответ… (Enter — отправить, Shift+Enter — новая строка)"></textarea>
-      <div id="composer-rich" contenteditable="true" hidden></div>
-      <button id="send">Отправить</button>
+    <div class="composer-wrap" id="composerWrap">
+      <div class="mode-row"><button class="ghost mode" id="mode" aria-haspopup="menu" title="Переключить Reply / Note">Reply ▾</button></div>
+      <div class="composer">
+        <textarea id="composer" placeholder="Напишите ответ… (Enter — отправить, Shift+Enter — новая строка)"></textarea>
+        <div id="composer-rich" contenteditable="true" hidden></div>
+        <button id="send">Отправить</button>
+      </div>
     </div>
   </main>
 
   <script>
     const TICKETS = [
-      { id: 1, user: 'Carlos M.', messages: [
+      { id: 1, user: 'Carlos M.', subject: 'Solicitud de reembolso y cancelación de suscripción', messages: [
         ['in', 'Hola, no puedo entrar en mi cuenta desde ayer. Me sale el error "token expirado".'],
         ['out', 'Hello Carlos, could you tell me which device you are using?'],
         ['in', 'Uso un iPhone 13 con la última versión de la app. Ya intenté reinstalarla y no funcionó.']
       ]},
-      { id: 2, user: 'Ahmet Y.', messages: [
+      { id: 2, user: 'Ahmet Y.', subject: 'Ödeme yapıldı ama bakiye güncellenmedi', messages: [
         ['in', 'Merhaba, ödeme yaptım ama bakiyem güncellenmedi. İşlem numarası: TX-99812.'],
         ['in', 'Lütfen yardım edin, acil.']
       ]},
-      { id: 3, user: 'Julia K.', messages: [
+      { id: 3, user: 'Julia K.', subject: 'Abonnement kündigen', messages: [
         ['in', 'Guten Tag! Ich möchte mein Abonnement kündigen, finde aber den Button nicht.'],
       ]},
-      { id: 4, user: 'John D.', messages: [
+      { id: 4, user: 'John D.', subject: 'Withdrawal pending', messages: [
         ['in', 'Hi, my withdrawal has been pending for 3 days. Any update?'],
         ['out', 'Hi John, we are checking it with the payments team.']
       ]},
-      { id: 5, user: 'Мария', messages: [
+      { id: 5, user: 'Мария', subject: 'Не приходит код подтверждения', messages: [
         ['in', 'Здравствуйте! Не приходит код подтверждения на почту, проверила спам.'],
       ]},
       // Письмо внутри iframe srcdoc — так почтовые сообщения показывают некоторые хелпдески
-      { id: 6, user: 'Ana (email)', messages: [
+      { id: 6, user: 'Ana (email)', subject: 'Pedido de reembolso da assinatura', messages: [
         ['in-email', '<p>Olá, equipe!</p><p>Gostaria de solicitar o reembolso da minha assinatura. O serviço não atendeu às minhas expectativas e ainda estou dentro do prazo de 14 dias.</p><p>Obrigada,<br>Ana</p>']
       ]}
     ];
@@ -86,6 +103,7 @@
     ];
 
     let current = TICKETS[0];
+    if (new URLSearchParams(location.search).has('dark')) document.documentElement.classList.add('dark');
 
     // ?shadow=1 — весь интерфейс внутри open Shadow DOM (так устроены некоторые хелпдески)
     let ROOT = document;
@@ -117,6 +135,7 @@
     // Эмулируем поведение SPA: окно чата полностью перерисовывается при смене тикета
     function renderChat() {
       $('chatTitle').textContent = 'Ticket #' + current.id + ' — ' + current.user;
+      $('chatSubject').textContent = current.subject || '';
       const box = $('chat-messages');
       box.innerHTML = '';
       for (const [dir, text] of current.messages) appendMsg(dir, text);
@@ -142,7 +161,7 @@
       m.className = 'msg ' + dir;
       const a = document.createElement('div');
       a.className = 'author';
-      a.textContent = dir === 'in' ? current.user : 'Support';
+      a.textContent = dir === 'in' ? current.user : dir === 'note' ? 'Internal note' : 'Support';
       const t = document.createElement('div');
       t.className = 'msg-text';
       t.textContent = text;
@@ -158,11 +177,21 @@
       const f = field();
       const text = (f.value !== undefined ? f.value : f.innerText).trim();
       if (!text) return;
-      current.messages.push(['out', text]);
-      appendMsg('out', text);
+      const dir = noteMode ? 'note' : 'out';
+      current.messages.push([dir, text]);
+      appendMsg(dir, text);
       if (f.value !== undefined) f.value = ''; else f.innerHTML = '';
       renderTickets();
     }
+
+    // Режим композера Reply / Note (как в хелпдесках): кнопка-выпадашка показывает текущий режим
+    let noteMode = false;
+    $('mode').onclick = () => {
+      noteMode = !noteMode;
+      $('mode').textContent = (noteMode ? 'Note' : 'Reply') + ' ▾';
+      $('composerWrap').classList.toggle('note-mode', noteMode);
+      field().focus();
+    };
 
     $('send').onclick = send;
     for (const id of ['composer', 'composer-rich']) {

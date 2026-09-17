@@ -3,6 +3,8 @@
  * Эмулирует chrome.* API (storage, runtime, i18n), переводит через те же glossary/providers/translator,
  * пишет статистику через lib/stats.js (в памяти страницы).
  * Использование: http://localhost:8787/test-site/mock-chat.html?harness=1
+ *   &mock=1   — тестовый переводчик без сети (не тратит лимиты Google)
+ *   &shadow=1 — интерфейс чата внутри Shadow DOM
  */
 (function () {
   const EXT = '../extension/';
@@ -56,8 +58,12 @@
             return { ok: true };
           case 'getStats':
             return { ok: true, today: await globalThis.ST_STATS.today(), days: await globalThis.ST_STATS.getDays() };
+          case 'health':
+            window.stHarness.lastHealth = msg.health;
+            return { ok: true };
           case 'hello':
           case 'pickEnd':
+          case 'convLang':
             return { ok: true };
           default:
             return { ok: false, error: 'not supported in harness: ' + msg.type };
@@ -73,12 +79,20 @@
     }
   };
 
+  // ?mock=1 — тестовый провайдер без сети (не расходует лимиты Google)
+  if (new URLSearchParams(location.search).has('mock')) {
+    const L0 = { provider: 'dev-mock' };
+    store.settings = L0; // mergeSettings дополнит остальное значениями по умолчанию
+  }
+
   const post = (msg) => new Promise((resolve) => messageListeners.forEach((l) => l(msg, {}, resolve)));
   window.stHarness = {
     command: (command) => post({ type: 'command', command }),
     pick: (kind) => post({ type: 'pick', kind }),
     status: () => post({ type: 'status' }),
     diag: () => post({ type: 'diag' }),
+    // произвольное сообщение от "фоновой части" (например, { type: 'frameLang', lang: 'pt' })
+    message: (msg) => post(msg),
     store,
     async setSettings(patch, sitePatch) {
       const s = globalThis.ST_LIB.mergeSettings(store.settings);
@@ -95,7 +109,7 @@
   }, true);
 
   const files = [
-    'lib/defaults.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
+    'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
     'content/core.js', 'content/styles.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
