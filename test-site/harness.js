@@ -91,7 +91,8 @@
     window.stFakeLocal = { calls: 0 };
     window.Translator = {
       async availability({ sourceLanguage, targetLanguage }) {
-        return ['es', 'pt'].includes(sourceLanguage) && targetLanguage === 'en' ? 'available' : 'downloadable';
+        const ok = ['es>en', 'pt>en', 'en>es', 'ru>es', 'es>ru', 'ru>en', 'en>ru'];
+        return ok.includes(sourceLanguage + '>' + targetLanguage) ? 'available' : 'downloadable';
       },
       async create({ sourceLanguage, targetLanguage }) {
         return {
@@ -107,7 +108,9 @@
       async create() {
         return {
           async detect(text) {
+            if (/\p{Script=Cyrillic}/u.test(text)) return [{ detectedLanguage: 'ru', confidence: 0.97 }];
             if (/\b(hola|cuenta|puedo|necesito|dinero)\b/i.test(text)) return [{ detectedLanguage: 'es', confidence: 0.95 }];
+            if (/iPhone/.test(text)) return [{ detectedLanguage: 'es', confidence: 0.5 }]; // неуверенная догадка
             if (/\b(merhaba|ödeme|lütfen)\b/i.test(text)) return [{ detectedLanguage: 'tr', confidence: 0.9 }];
             return [{ detectedLanguage: 'und', confidence: 0.2 }];
           }
