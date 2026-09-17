@@ -60,7 +60,7 @@ flowchart LR
 | `core.js` | Настройки и правило сайта; мост к SW (`send`, `translate`, `track`); `alive()` — синхронное обнаружение перезагрузки расширения; CLD; `ticketKey()` (селектор ID тикета или URL); `langLock` (📌 язык тикета, 300 последних); `expectedLang()` = 📌 → язык последнего сообщения собеседника; DOM-утилиты, вставка текста |
 | `incoming.js` | Observer → сообщения в окнах → хэш → CLD → перевод → подпись (`inside` — внутрь, `after` — соседним узлом, с чисткой «сирот»); `lastForeignLang()` учитывает `userMessageSelector` / `operatorLangs`; событие статистики |
 | `outgoing.js` | Кнопка у поля (показывает язык и 📌); панель подтверждения; чекбокс 📌; запоминание вставленного перевода (для защиты); событие статистики |
-| `guard.js` | Перехват в фазе capture на `window`: Enter/Ctrl+Enter (по `sendKey`) и клик по `sendButtonSelector`; проверка; предупреждение; повтор отправки (синтетический Enter или `button.click()`) |
+| `guard.js` | Перехват в фазе capture на `window`: Enter/Ctrl+Enter/Shift+Enter (по `sendKey`) и клик по `sendButtonSelector`; проверка; предупреждение; повтор отправки (синтетический Enter или `button.click()`) |
 | `picker.js` | Выбор окна, сообщения, поля, кнопки отправки, ID тикета; отмена во всех фреймах, когда выбор сделан в одном |
 | `main.js` | Применение настроек, команды (действует фрейм с фокусом), статус для popup, SPA-навигация |
 
@@ -93,7 +93,7 @@ flowchart LR
       "userMessageSelector": ".msg.in",        // сообщения пользователя
       "inputSelector": "#composer",
       "sendButtonSelector": "#send",
-      "sendKey": "enter",                      // enter | ctrl+enter | none
+      "sendKey": "enter",                      // enter | ctrl+enter | shift+enter | none
       "ticketIdSelector": ".ticket-id",
       "insertMode": "inside",                  // inside | after
       "sendGuard": true,

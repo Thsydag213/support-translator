@@ -79,6 +79,12 @@
     }
   };
 
+  // ?mac=1 — эмуляция macOS (подсказки ⌘, Command+Enter)
+  if (new URLSearchParams(location.search).has('mac')) {
+    Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' });
+    Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: 'macOS' }) });
+  }
+
   // ?mock=1 — тестовый провайдер без сети (не расходует лимиты Google)
   if (new URLSearchParams(location.search).has('mock')) {
     const L0 = { provider: 'dev-mock' };
@@ -137,12 +143,6 @@
       await chrome.storage.local.set({ settings: s });
     }
   };
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && (e.code === 'KeyY' || String(e.key).toLowerCase() === 'y')) {
-      e.preventDefault();
-      window.stHarness.command('translate-input');
-    }
-  }, true);
 
   const files = [
     'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
