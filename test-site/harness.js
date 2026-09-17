@@ -48,7 +48,7 @@
         switch (msg.type) {
           case 'translate':
             try {
-              const result = await globalThis.ST_TRANSLATOR.translate(msg.text, msg.sl, msg.tl, settings);
+              const result = await globalThis.ST_TRANSLATOR.translate(msg.text, msg.sl, msg.tl, settings, msg.opts);
               return { ok: true, result };
             } catch (e) {
               return { ok: false, error: e.message };
