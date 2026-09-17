@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Support Translator — настройки</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>🌐 Support Translator <span class="muted" id="version"></span> <a href="../stats/stats.html" class="h1link">Статистика →</a></h1>
+
+    <section>
+      <h2>Входящие сообщения</h2>
+      <div class="grid">
+        <label>Переводить на язык
+          <select id="targetLang"></select>
+        </label>
+        <label>Не переводить языки (через запятую)
+          <input id="skipLangs" placeholder="en">
+        </label>
+        <label>Как показывать перевод
+          <select id="displayMode">
+            <option value="below">Под оригиналом</option>
+            <option value="replace">Вместо оригинала (оригинал по кнопке)</option>
+          </select>
+        </label>
+        <label>Минимум символов для перевода
+          <input id="minChars" type="number" min="1" max="100">
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Исходящие сообщения</h2>
+      <div class="grid">
+        <label>Язык по умолчанию (если язык собеседника не определён)
+          <select id="fallbackOutgoingLang"></select>
+        </label>
+        <label>Обратный перевод для проверки
+          <select id="backTranslateLang"></select>
+        </label>
+        <label>Языки операторов (через запятую) — не считаются языком собеседника
+          <input id="operatorLangs" placeholder="ru">
+        </label>
+        <label>Защита отправки: не проверять сообщения короче (букв)
+          <input id="guardMinLetters" type="number" min="1" max="200">
+        </label>
+        <label class="check"><input type="checkbox" id="outgoingButton"> Показывать кнопку «Перевести» у поля ввода</label>
+      </div>
+      <h3>Языки ответов</h3>
+      <p class="small">Ответы переводятся только на отмеченные языки. Входящие сообщения переводятся с любого языка. Если собеседник пишет на выключенном языке, ответ переводится на язык ниже.</p>
+      <div class="grid">
+        <label>Если язык собеседника выключен — отвечать на
+          <select id="replyFallbackLang"></select>
+        </label>
+        <div class="small" style="display:flex;gap:8px;align-items:end">
+          <button type="button" class="small" id="replyLangsDefault">Только языки платформы</button>
+          <button type="button" class="small" id="replyLangsAll">Включить все</button>
+        </div>
+      </div>
+      <div class="reply-langs" id="replyLangs"></div>
+      <h3>Проверки перевода ответа</h3>
+      <div class="grid">
+        <label class="check"><input type="checkbox" id="checkNumbers"> Сверять числа, суммы, валюты, ссылки и почты в переводе с оригиналом</label>
+        <label class="check"><input type="checkbox" id="spellCheck"> Подсказывать исправление опечаток в тексте оператора</label>
+        <label>Вежливость обращения
+          <select id="formality">
+            <option value="formal">Предупреждать, если перевод обращается на «ты»</option>
+            <option value="off">Не проверять</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Интерфейс</h2>
+      <div class="grid">
+        <label>Оформление панелей расширения
+          <select id="uiTheme">
+            <option value="auto">Авто — по фону сайта</option>
+            <option value="light">Светлое</option>
+            <option value="dark">Тёмное</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="listBadges"> Метки языка (ES, TR…) в списке тикетов</label>
+        <label class="check"><input type="checkbox" id="listBadgesUseNetwork"> Для коротких превью уточнять язык у переводчика (тратит запросы)</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Глоссарий</h2>
+      <p class="muted">По строке на термин. Просто термин — <b>не переводить</b>. <code>термин =&gt; ru: … | es: … | en: …</code> — <b>фиксированный перевод</b> для указанных языков (для остальных языков переводит Google). Регистр не важен, ищутся целые слова. <code>#</code> — комментарий.</p>
+      <textarea id="glossary" rows="8" spellcheck="false" placeholder="Premium Plus&#10;SupportDesk&#10;Кошелёк => ru: Кошелёк | es: Billetera | tr: Cüzdan | en: Wallet&#10;Вывод средств => ru: Вывод средств | es: Retiro | en: Withdrawal"></textarea>
+      <div class="test">
+        <input id="glossaryTest" value="Откройте Кошелёк в Premium Plus и проверьте вывод средств.">
+        <select id="glossaryTestLang"></select>
+        <button id="glossaryTestBtn" class="secondary">Проверить глоссарий</button>
+      </div>
+      <pre id="glossaryOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Провайдер перевода</h2>
+      <div class="grid">
+        <label>Провайдер
+          <select id="provider">
+            <option value="google-free">Google Translate — бесплатный (неофициальный)</option>
+            <option value="google-cloud">Google Cloud Translation API — официальный (ключ)</option>
+            <option value="dev-mock">Тестовый — без сети (только для проверки интерфейса)</option>
+          </select>
+        </label>
+        <label>Google Cloud API key (резерв)
+          <input id="googleCloudApiKey" type="password" placeholder="AIza…" autocomplete="off">
+        </label>
+        <label class="check"><input type="checkbox" id="fallbackToCloud"> Резерв: если бесплатный Google ограничил запросы или недоступен — переводить через Google Cloud (нужен ключ)</label>
+        <label class="check"><input type="checkbox" id="batchRequests"> Объединять сообщения одного языка в один запрос</label>
+      </div>
+      <p class="muted small">Ключ Google Cloud: Google Cloud Console → проект с оплатой → включить «Cloud Translation API» → APIs &amp; Services → Credentials → Create credentials → API key → ограничить ключ только «Cloud Translation API». Первые 500 000 символов в месяц бесплатно.</p>
+      <div class="test">
+        <input id="testText" value="Hola, no puedo entrar en mi cuenta desde ayer.">
+        <button id="testBtn">Проверить перевод</button>
+        <button id="testCloud" class="secondary">Проверить резерв Google Cloud</button>
+        <button id="clearCache" class="secondary">Очистить кэш</button>
+      </div>
+      <pre id="testOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Перевод на устройстве (встроенный переводчик Chrome)</h2>
+      <p class="muted">Переводит прямо в браузере: без интернета, без лимитов, тексты не уходят в Google. Режим «для всего» — скачанные пакеты используются первыми для входящих, ответа и обратного перевода. Если языковой пакет не скачан — автоматически используется облако.</p>
+      <div class="grid">
+        <label>Использовать
+          <select id="localTranslatorMode">
+            <option value="all">Для всего: входящие, ответ, обратный перевод (облако — только если пакета нет)</option>
+            <option value="incoming+back">Для входящих и обратного перевода (ответ — облако)</option>
+            <option value="incoming">Только для входящих</option>
+            <option value="off">Не использовать</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="onlyVisible"> Переводить входящие только когда сообщение на экране</label>
+      </div>
+      <div class="test">
+        <input id="localLangs" value="es, pt, fr, de, it, tr, pl, nl, uk, ru, ar, zh-CN, ja, ko" title="Языки собеседников через запятую">
+        <button id="localCheck" class="secondary">Проверить пакеты</button>
+        <button id="localDownload">Скачать языковые пакеты</button>
+      </div>
+      <pre id="localOut" class="out"></pre>
+    </section>
+
+    <section>
+      <h2>Сайты и окна</h2>
+      <p class="muted">Правило включается, если URL вкладки (или iframe с чатом) подходит под шаблон: <code>*</code> — любые символы, несколько шаблонов через запятую.
+        Расширение работает только на доменах, к которым выдан доступ. Селекторы проще задать через popup расширения.</p>
+      <div id="sites"></div>
+      <button id="addSite" class="secondary">+ Добавить сайт</button>
+    </section>
+
+    <section>
+      <h2>Импорт / экспорт</h2>
+      <p class="muted">Для раздачи одинаковых настроек всей команде. API key в экспорт не попадает. После импорта каждому нужно выдать доступ к сайтам (кнопка у правила).</p>
+      <div class="test">
+        <button id="export" class="secondary">Экспорт в файл</button>
+        <label class="file secondary">Импорт из файла<input type="file" id="import" accept=".json"></label>
+      </div>
+    </section>
+
+    <div class="bar">
+      <span id="saved" class="muted"></span>
+      <button id="save">Сохранить</button>
+    </div>
+  </main>
+
+  <template id="siteTpl">
+    <div class="site">
+      <div class="site__head">
+        <label class="check"><input type="checkbox" data-f="enabled"> Включено</label>
+        <input data-f="name" class="site__name" placeholder="Название">
+        <button class="danger" data-act="del">Удалить</button>
+      </div>
+      <div class="access">
+        <span data-access>…</span>
+        <button class="secondary small" data-act="grant" hidden>Выдать доступ</button>
+      </div>
+      <div class="grid">
+        <label>Шаблон URL (страница и/или iframe чата) <input data-f="urlPattern" placeholder="https://desk.company.com/*"></label>
+        <label>Доп. домены доступа (если не выводятся из шаблона) <input data-f="origins" placeholder="https://chat.vendor.com/*"></label>
+        <label>Окно(а) чата <input data-f="containerSelector" placeholder="#chat-messages"></label>
+        <label>Сообщение <input data-f="messageSelector" placeholder=".message-text (пусто = авто)"></label>
+        <label>Сообщение пользователя (отличает от оператора) <input data-f="userMessageSelector" placeholder=".message--incoming"></label>
+        <label>Сообщения агентов (не пользователя)
+          <select data-f="agentMessages">
+            <option value="button">Переводить по кнопке «🌐 перевести»</option>
+            <option value="auto">Переводить автоматически</option>
+            <option value="off">Не переводить</option>
+          </select>
+        </label>
+        <label>Поле ввода <input data-f="inputSelector" placeholder="textarea#reply (пусто = любое)"></label>
+        <label>Кнопка отправки <input data-f="sendButtonSelector" placeholder="button[type=submit]"></label>
+        <label>ID тикета (пусто = URL страницы) <input data-f="ticketIdSelector" placeholder=".ticket-header__id"></label>
+        <label>Тема письма/тикета <input data-f="subjectSelector" placeholder=".conversation-header__subject"></label>
+        <label>Превью в списке тикетов (метка языка) <input data-f="listItemSelector" placeholder=".inbox-item__preview"></label>
+        <label>Режим заметки: подписи активного режима <input data-f="noteModeText" placeholder="Note, Заметка"></label>
+        <label>Режим заметки: селектор (если подписи не срабатывают) <input data-f="noteSelector" placeholder=".composer--note"></label>
+        <label>Отправка с клавиатуры
+          <select data-f="sendKey">
+            <option value="enter">Enter</option>
+            <option value="ctrl+enter">Ctrl+Enter (⌘+Enter на Mac)</option>
+            <option value="shift+enter">Shift+Enter (Enter — новая строка)</option>
+            <option value="none">Только кнопкой</option>
+          </select>
+        </label>
+        <label>Куда вставлять перевод
+          <select data-f="insertMode">
+            <option value="inside">Внутрь сообщения</option>
+            <option value="after">После сообщения (если сайт «ломается»)</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" data-f="sendGuard"> Предупреждать об отправке непереведённого текста</label>
+      </div>
+    </div>
+  </template>
+
+  <script src="../lib/defaults.js"></script>
+  <script src="../lib/glossary.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
