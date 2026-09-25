@@ -64,7 +64,21 @@
           case 'hello':
           case 'pickEnd':
           case 'convLang':
+          case 'openOptions':
+          case 'openShortcuts':
+          case 'openOnboarding':
             return { ok: true };
+          case 'updateInfo':
+            return { ok: true, update: window.stHarness.fakeUpdate || null };
+          case 'selfDiag':
+            return { ok: true, report: { harness: true, frames: [await window.stHarness.diag()] } };
+          // ?fakellm=1 — эмуляция локальной модели (мост offscreen)
+          case 'llmInfo':
+            return { ok: true, info: window.stFakeLLM ? { prompt: 'available', summarizer: 'available' } : { prompt: 'none', summarizer: 'none' } };
+          case 'llmPrompt':
+            return window.stFakeLLM ? { ok: true, text: window.stFakeLLM(msg) } : { ok: false, error: 'нет модели' };
+          case 'llmSummarize':
+            return window.stFakeLLM ? { ok: true, text: 'Summary: ' + msg.text.slice(0, 60) } : { ok: false, error: 'нет модели' };
           default:
             return { ok: false, error: 'not supported in harness: ' + msg.type };
         }
@@ -83,6 +97,15 @@
   if (new URLSearchParams(location.search).has('mac')) {
     Object.defineProperty(navigator, 'platform', { get: () => 'MacIntel' });
     Object.defineProperty(navigator, 'userAgentData', { get: () => ({ platform: 'macOS' }) });
+  }
+
+  // ?fakellm=1 — локальная модель: правка = «[fix]» + текст; анализ тикета — JSON
+  if (new URLSearchParams(location.search).has('fakellm')) {
+    window.stFakeLLM = (msg) => {
+      window.stFakeLLM.calls = (window.stFakeLLM.calls || 0) + 1;
+      if (msg.schema) return JSON.stringify({ request: 'Customer wants a refund for a double charge', summary: 'Charged twice this month; asks for money back.', intent: 'refund', mood: 'upset' });
+      return '[edited] ' + msg.text;
+    };
   }
 
   // ?mock=1 — тестовый провайдер без сети (не расходует лимиты Google)
@@ -145,8 +168,8 @@
   };
 
   const files = [
-    'lib/compat.js', 'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
-    'content/core.js', 'content/styles.js', 'content/local-translator.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
+    'lib/compat.js', 'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/pii.js', 'lib/stats.js', 'lib/translator.js',
+    'content/core.js', 'content/styles.js', 'content/local-translator.js', 'content/tm.js', 'content/incoming.js', 'content/outgoing.js', 'content/assist.js', 'content/guard.js', 'content/picker.js', 'content/palette.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
     if (i >= files.length) return console.log('[harness] loaded');
