@@ -1,14 +1,1 @@
-# Архивы релизов пересобираются tools/release.ps1 (сами папки versions/vX.Y.Z хранятся в репозитории)
-versions/*.zip
-
-# Экспорт настроек/статистики — может содержать рабочие данные
-support-translator-settings*.json
-support-translator-stats*.json
-support-translator-stats*.csv
-
-# OS / editors
-Thumbs.db
-desktop.ini
-.DS_Store
-.vscode/
-.idea/
+dist/

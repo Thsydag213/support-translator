@@ -145,7 +145,7 @@
   };
 
   const files = [
-    'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
+    'lib/compat.js', 'lib/defaults.js', 'lib/checks.js', 'lib/providers.js', 'lib/glossary.js', 'lib/stats.js', 'lib/translator.js',
     'content/core.js', 'content/styles.js', 'content/local-translator.js', 'content/incoming.js', 'content/outgoing.js', 'content/guard.js', 'content/picker.js', 'content/diag.js', 'content/main.js'
   ];
   (function next(i) {
