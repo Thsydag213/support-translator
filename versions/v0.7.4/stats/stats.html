@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support Translator — статистика</title>
+  <link rel="stylesheet" href="stats.css">
+</head>
+<body>
+  <main class="viz-root">
+    <header class="top">
+      <h1>📊 Статистика перевода</h1>
+      <a href="../options/options.html" class="muted">Настройки</a>
+    </header>
+
+    <div class="filters">
+      <label>Период
+        <select id="period">
+          <option value="7">7 дней</option>
+          <option value="30" selected>30 дней</option>
+          <option value="90">90 дней</option>
+        </select>
+      </label>
+      <span class="source" id="source">Данные: этот браузер</span>
+      <span class="spacer"></span>
+      <label class="btn secondary">+ Файлы коллег (JSON)<input type="file" id="merge" accept=".json" multiple></label>
+      <button class="secondary" id="exportJson">Экспорт JSON</button>
+      <button class="secondary" id="exportCsv">Экспорт CSV</button>
+    </div>
+
+    <section class="tiles" id="tiles"></section>
+
+    <section class="card">
+      <h2>Символов отправлено в переводчик по дням</h2>
+      <p class="muted small">Только реальные запросы (без кэша). Именно этот объём тарифицируется в официальном API.</p>
+      <div class="chart" id="charsChart" role="img" aria-label="Символы по дням"></div>
+    </section>
+
+    <div class="two">
+      <section class="card">
+        <h2>Языки входящих сообщений</h2>
+        <p class="muted small">Уникальные переведённые сообщения пользователей</p>
+        <div id="langIn" class="hbars"></div>
+      </section>
+      <section class="card">
+        <h2>Языки переведённых ответов</h2>
+        <p class="muted small">Ответы, вставленные через панель подтверждения</p>
+        <div id="langOut" class="hbars"></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Оценка стоимости официального API</h2>
+      <div id="cost"></div>
+    </section>
+
+    <section class="card">
+      <h2>По дням</h2>
+      <div class="tablewrap">
+        <table id="table">
+          <thead>
+            <tr>
+              <th>Дата</th><th>Входящих</th><th>Ответов</th><th>Запросов</th><th>Символов</th><th>Из кэша</th>
+              <th>Ошибок</th><th>Блокировок</th><th>«Как есть»</th><th>Переведено после блок.</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="muted small">
+      Статистика хранится локально в браузере оператора (<span id="keep"></span> дн.).
+      Чтобы получить цифры по команде: каждый делает «Экспорт JSON», тимлид добавляет файлы через «+ Файлы коллег».
+      <button class="link" id="reset">Сбросить статистику этого браузера</button>
+    </footer>
+  </main>
+  <div class="tooltip" id="tip" role="tooltip" hidden></div>
+  <script src="../lib/compat.js"></script>
+  <script src="../lib/defaults.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>
